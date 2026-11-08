@@ -1,0 +1,176 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * AlphaBasket design system.
+ *
+ * One dark theme, deliberately calm: cool charcoal surfaces that step lighter
+ * as they elevate, a single mint primary for actions and gains, amber only for
+ * warnings, red only for losses and destructive actions. Everything is
+ * expressed as tokens so components never carry a raw colour.
+ */
+
+@layer base {
+  :root {
+    --background: 224 26% 6%;
+    --foreground: 210 20% 96%;
+
+    --card: 224 22% 9%;
+    --card-foreground: 210 20% 96%;
+
+    --popover: 224 22% 11%;
+    --popover-foreground: 210 20% 96%;
+
+    --primary: 156 64% 52%;
+    --primary-foreground: 224 30% 6%;
+
+    --secondary: 224 18% 14%;
+    --secondary-foreground: 210 20% 92%;
+
+    --muted: 224 18% 13%;
+    --muted-foreground: 218 12% 66%;
+
+    --accent: 224 18% 15%;
+    --accent-foreground: 210 20% 96%;
+
+    --success: 156 64% 52%;
+    --success-foreground: 224 30% 6%;
+
+    --warning: 38 92% 60%;
+    --warning-foreground: 224 30% 6%;
+
+    --destructive: 0 72% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 224 16% 17%;
+    --input: 224 16% 19%;
+    --ring: 156 64% 52%;
+
+    --radius: 1rem;
+
+    /* Kept for the shadcn sidebar primitive, which is unused but compiles. */
+    --sidebar-background: 224 22% 9%;
+    --sidebar-foreground: 210 20% 92%;
+    --sidebar-primary: 156 64% 52%;
+    --sidebar-primary-foreground: 224 30% 6%;
+    --sidebar-accent: 224 18% 15%;
+    --sidebar-accent-foreground: 210 20% 96%;
+    --sidebar-border: 224 16% 17%;
+    --sidebar-ring: 156 64% 52%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    color-scheme: dark;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Manrope', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv11', 'ss01';
+    /* A single ambient glow at the top of the page. Fixed so it does not
+       scroll with content and never competes with a card. */
+    background-image:
+      radial-gradient(60% 40% at 50% -10%, hsl(var(--primary) / 0.14) 0%, transparent 70%),
+      radial-gradient(40% 30% at 100% 100%, hsl(var(--primary) / 0.05) 0%, transparent 70%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.3);
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Motion is a courtesy, never a requirement. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .surface {
+    @apply rounded-2xl border border-border/70 bg-card;
+    background-image: linear-gradient(180deg, hsl(0 0% 100% / 0.025), transparent 40%);
+  }
+
+  /* A surface that answers the cursor. */
+  .surface-interactive {
+    @apply transition-[border-color,box-shadow,transform] duration-200 ease-out;
+  }
+  @media (hover: hover) {
+    .surface-interactive:hover {
+      @apply -translate-y-0.5 border-primary/40 shadow-glow-ring;
+    }
+  }
+
+  .live-dot {
+    @apply h-1.5 w-1.5 rounded-full bg-success animate-pulse-dot;
+  }
+
+  .stat-label {
+    @apply text-xs font-medium text-muted-foreground;
+  }
+
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  /* Thin, unobtrusive scrollbars inside panels. */
+  .scrollbar-subtle {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  .scrollbar-subtle::-webkit-scrollbar {
+    width: 8px;
+  }
+  .scrollbar-subtle::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 9999px;
+  }
+}
+
+@layer utilities {
+  .content-grid {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+}
+
+/* The wallet picker modal comes from @solana/wallet-adapter-react-ui with its
+   own stylesheet. Only its radius and font are nudged so it reads as part of
+   this app; its colours already suit a dark theme. */
+.wallet-adapter-modal-wrapper {
+  border-radius: calc(var(--radius) + 8px) !important;
+  font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif !important;
+}
+.wallet-adapter-modal-list .wallet-adapter-button {
+  border-radius: calc(var(--radius) - 4px) !important;
+  font-family: inherit !important;
+}
+.wallet-adapter-modal-button-close {
+  border-radius: 9999px !important;
+}
