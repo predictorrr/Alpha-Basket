@@ -1,0 +1,6036 @@
+{
+  "address": "5mzLoAijdzAQV5D7QXe6TTGZ9TkWQanygfnb5VPPxFSm",
+  "metadata": {
+    "name": "polybaskets_escrow",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "AlphaBasket v2 internal-share accounting and backend-authorized settlement program"
+  },
+  "instructions": [
+    {
+      "name": "accept_admin",
+      "docs": [
+        "Accepts administrator authority as the proposed key."
+      ],
+      "discriminator": [
+        112,
+        42,
+        45,
+        90,
+        116,
+        181,
+        13,
+        170
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pending_admin",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "accrue_management_fee",
+      "docs": [
+        "Permissionless crank; dilution is proportional to exact elapsed seconds."
+      ],
+      "discriminator": [
+        91,
+        57,
+        239,
+        81,
+        27,
+        216,
+        220,
+        148
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "basket",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  97,
+                  115,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "basket.basket_id",
+                "account": "Basket"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "attest_perp_event",
+      "docs": [
+        "Records an autonomous Phoenix event. Callable unprompted, with no prior",
+        "AlphaBasket-initiated request and no matching trade receipt."
+      ],
+      "discriminator": [
+        241,
+        109,
+        28,
+        2,
+        97,
+        151,
+        83,
+        199
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "basket",
+          "docs": [
+            "Read-only. An autonomous event changes Phoenix's view of the position, but",
+            "this program has no verified post-event margin or entry price to write —",
+            "those come from a vault-delta read, which only the settlement path performs."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  97,
+                  115,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "basket.basket_id",
+                "account": "Basket"
+              }
+            ]
+          }
+        },
+        {
+          "name": "attestation",
+          "docs": [
+            "`init`, never `init_if_needed`: the same event observed twice — over both",
+            "the trader-state stream and the notification stream, for instance —",
+            "records once."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  101,
+                  114,
+                  112,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.event_hash"
+              }
+            ]
+          }
+        },
+        {
+          "name": "backend_signer",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "AttestPerpEventArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "begin_reconstitution",
+      "docs": [
+        "Moves an eligible perpetual basket into reconstitution."
+      ],
+      "discriminator": [
+        41,
+        110,
+        60,
+        3,
+        88,
+        106,
+        37,
+        84
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "basket",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  97,
+                  115,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "basket.basket_id",
+                "account": "Basket"
+              }
+            ]
+          }
+        },
+        {
+          "name": "backend_signer",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "begin_resolution",
+      "docs": [
+        "Stops deposits and starts resolution for a non-perpetual basket."
+      ],
+      "discriminator": [
+        227,
+        106,
+        197,
+        41,
+        160,
+        120,
+        124,
+        182
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "basket",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  97,
+                  115,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "basket.basket_id",
+                "account": "Basket"
+              }
+            ]
+          }
+        },
+        {
+          "name": "backend_signer",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "cancel_admin_transfer",
+      "docs": [
+        "Cancels a pending administrator transfer."
+      ],
+      "discriminator": [
+        38,
+        131,
+        157,
+        31,
+        240,
+        137,
+        44,
+        215
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "complete_deposit",
+      "docs": [
+        "Completes a user-signed deposit after external Polymarket execution."
+      ],
+      "discriminator": [
+        169,
+        140,
+        35,
+        214,
+        236,
+        133,
+        191,
+        32
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "basket",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  97,
+                  115,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "basket.basket_id",
+                "account": "Basket"
+              }
+            ]
+          }
+        },
+        {
+          "name": "position",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "basket"
+              },
+              {
+                "kind": "arg",
+                "path": "args.user"
+              }
+            ]
+          }
+        },
+        {
+          "name": "receipt",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  99,
+                  101,
+                  105,
+                  112,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.execution_batch_hash"
+              }
+            ]
+          }
+        },
+        {
+          "name": "backend_signer",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "ix_sysvar",
+          "address": "Sysvar1nstructions1111111111111111111111111"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "CompleteDepositArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "complete_phoenix_trade",
+      "docs": [
+        "Records an already-executed, vault-delta-verified Phoenix trade and",
+        "updates the composition item it belongs to."
+      ],
+      "discriminator": [
+        233,
+        102,
+        47,
+        149,
+        53,
+        242,
+        71,
+        99
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "basket",
+          "docs": [
+            "Mutable, but only one item's fields move.",
+            "",
+            "`Basket.items` is the live composition. A settlement finds the one `Perp`",
+            "item for its market and updates that item in place; `composition_hash`,",
+            "`composition_version` and every other item are left exactly as they were,",
+            "because a fill is not a composition change.",
+            "",
+            "Boxed: `Account<'info, T>` holds its deserialized `T` in the instruction's",
+            "stack frame, and a 16-item composition does not fit in 4096 bytes",
+            "alongside the rest of this context."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  97,
+                  115,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "basket.basket_id",
+                "account": "Basket"
+              }
+            ]
+          }
+        },
+        {
+          "name": "perp_eligibility_list",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  101,
+                  114,
+                  112,
+                  95,
+                  101,
+                  108,
+                  105,
+                  103,
+                  105,
+                  98,
+                  105,
+                  108,
+                  105,
+                  116,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "perp_eligibility_list.list_hash",
+                "account": "PerpEligibilityList"
+              },
+              {
+                "kind": "account",
+                "path": "perp_eligibility_list.nonce",
+                "account": "PerpEligibilityList"
+              }
+            ]
+          }
+        },
+        {
+          "name": "trader_registry",
+          "docs": [
+            "Proves the execution wallet was onboarded to Phoenix exactly once."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  101,
+                  114,
+                  112,
+                  95,
+                  116,
+                  114,
+                  97,
+                  100,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.execution_wallet"
+              }
+            ]
+          }
+        },
+        {
+          "name": "receipt",
+          "docs": [
+            "`init`, never `init_if_needed`: a second attempt to record the same",
+            "execution fails in the runtime."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  101,
+                  114,
+                  112,
+                  95,
+                  114,
+                  101,
+                  99,
+                  101,
+                  105,
+                  112,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.execution_hash"
+              }
+            ]
+          }
+        },
+        {
+          "name": "backend_signer",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "CompletePhoenixTradeArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "complete_protocol_fee_withdrawal",
+      "docs": [
+        "Redeems accrued protocol dilution shares after external execution."
+      ],
+      "discriminator": [
+        35,
+        40,
+        178,
+        226,
+        74,
+        194,
+        175,
+        239
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "basket",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  97,
+                  115,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "basket.basket_id",
+                "account": "Basket"
+              }
+            ]
+          }
+        },
+        {
+          "name": "receipt",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  99,
+                  101,
+                  105,
+                  112,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.execution_batch_hash"
+              }
+            ]
+          }
+        },
+        {
+          "name": "backend_signer",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "CompleteProtocolFeeWithdrawalArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "complete_reconstitution",
+      "docs": [
+        "Applies a new Composer-signed canonical composition."
+      ],
+      "discriminator": [
+        236,
+        210,
+        113,
+        243,
+        154,
+        142,
+        102,
+        131
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "basket",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  97,
+                  115,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "basket.basket_id",
+                "account": "Basket"
+              }
+            ]
+          }
+        },
+        {
+          "name": "composition_draft",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  109,
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110,
+                  95,
+                  100,
+                  114,
+                  97,
+                  102,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.composition_hash"
+              },
+              {
+                "kind": "arg",
+                "path": "args.composition_nonce"
+              }
+            ]
+          }
+        },
+        {
+          "name": "eligibility_list",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  108,
+                  105,
+                  103,
+                  105,
+                  98,
+                  105,
+                  108,
+                  105,
+                  116,
+                  121
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.eligibility_hash"
+              },
+              {
+                "kind": "arg",
+                "path": "args.eligibility_nonce"
+              }
+            ]
+          }
+        },
+        {
+          "name": "backend_signer",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "composer_signer",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "ix_sysvar",
+          "address": "Sysvar1nstructions1111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "ReconstitutionArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "complete_withdrawal",
+      "docs": [
+        "Completes both an active early exit and a final redemption."
+      ],
+      "discriminator": [
+        107,
+        98,
+        134,
+        131,
+        74,
+        120,
+        174,
+        121
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "basket",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  97,
+                  115,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "basket.basket_id",
+                "account": "Basket"
+              }
+            ]
+          }
+        },
+        {
+          "name": "position",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "basket"
+              },
+              {
+                "kind": "arg",
+                "path": "args.user"
+              }
+            ]
+          }
+        },
+        {
+          "name": "receipt",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  99,
+                  101,
+                  105,
+                  112,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.execution_batch_hash"
+              }
+            ]
+          }
+        },
+        {
+          "name": "backend_signer",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "ix_sysvar",
+          "address": "Sysvar1nstructions1111111111111111111111111"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "CompleteWithdrawalArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "create_basket",
+      "docs": [
+        "Only the configured Composer Service key can create a basket."
+      ],
+      "discriminator": [
+        47,
+        105,
+        155,
+        148,
+        15,
+        169,
+        202,
+        211
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "basket",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  97,
+                  115,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.basket_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "composition_draft",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  109,
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110,
+                  95,
+                  100,
+                  114,
+                  97,
+                  102,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.composition_hash"
+              },
+              {
+                "kind": "arg",
+                "path": "args.composition_nonce"
+              }
+            ]
+          }
+        },
+        {
+          "name": "eligibility_list",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  108,
+                  105,
+                  103,
+                  105,
+                  98,
+                  105,
+                  108,
+                  105,
+                  116,
+                  121
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.eligibility_hash"
+              },
+              {
+                "kind": "arg",
+                "path": "args.eligibility_nonce"
+              }
+            ]
+          }
+        },
+        {
+          "name": "composer_signer",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "ix_sysvar",
+          "address": "Sysvar1nstructions1111111111111111111111111"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "CreateBasketArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "initialize",
+      "docs": [
+        "Initializes the singleton configuration under the program upgrade authority."
+      ],
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "program",
+          "address": "5mzLoAijdzAQV5D7QXe6TTGZ9TkWQanygfnb5VPPxFSm"
+        },
+        {
+          "name": "program_data"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "InitializeArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "onboard_trader_account",
+      "docs": [
+        "One-time registration of a Phoenix trader account for an execution wallet."
+      ],
+      "discriminator": [
+        177,
+        209,
+        141,
+        143,
+        78,
+        228,
+        138,
+        86
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "registry",
+          "docs": [
+            "`init`, never `init_if_needed`: onboarding the same wallet twice fails in",
+            "the runtime, which is the guarantee this account exists to provide."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  101,
+                  114,
+                  112,
+                  95,
+                  116,
+                  114,
+                  97,
+                  100,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.execution_wallet"
+              }
+            ]
+          }
+        },
+        {
+          "name": "backend_signer",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "OnboardTraderAccountArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "propose_admin",
+      "docs": [
+        "Starts the two-step administrator transfer."
+      ],
+      "discriminator": [
+        121,
+        214,
+        199,
+        212,
+        87,
+        39,
+        117,
+        234
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_admin",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "publish_composition_draft",
+      "docs": [
+        "Publishes a creator-selected weighted composition in a size-safe prior transaction."
+      ],
+      "discriminator": [
+        25,
+        204,
+        60,
+        116,
+        175,
+        6,
+        255,
+        92
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "composition_draft",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  109,
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110,
+                  95,
+                  100,
+                  114,
+                  97,
+                  102,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.composition_hash"
+              },
+              {
+                "kind": "arg",
+                "path": "args.composition_nonce"
+              }
+            ]
+          }
+        },
+        {
+          "name": "eligibility_list",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  108,
+                  105,
+                  103,
+                  105,
+                  98,
+                  105,
+                  108,
+                  105,
+                  116,
+                  121
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.eligibility_hash"
+              },
+              {
+                "kind": "arg",
+                "path": "args.eligibility_nonce"
+              }
+            ]
+          }
+        },
+        {
+          "name": "composer_signer",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "PublishCompositionDraftArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "publish_eligibility_list",
+      "docs": [
+        "Publishes a short-lived Composer-screened prediction-market list."
+      ],
+      "discriminator": [
+        90,
+        36,
+        193,
+        106,
+        49,
+        100,
+        73,
+        83
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "eligibility_list",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  108,
+                  105,
+                  103,
+                  105,
+                  98,
+                  105,
+                  108,
+                  105,
+                  116,
+                  121
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.list_hash"
+              },
+              {
+                "kind": "arg",
+                "path": "args.nonce"
+              }
+            ]
+          }
+        },
+        {
+          "name": "composer_signer",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "PublishEligibilityListArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "publish_perp_eligibility_list",
+      "docs": [
+        "Publishes the Composer-screened Phoenix perpetual market list."
+      ],
+      "discriminator": [
+        254,
+        240,
+        153,
+        106,
+        61,
+        79,
+        158,
+        54
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "perp_eligibility_list",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  101,
+                  114,
+                  112,
+                  95,
+                  101,
+                  108,
+                  105,
+                  103,
+                  105,
+                  98,
+                  105,
+                  108,
+                  105,
+                  116,
+                  121
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.list_hash"
+              },
+              {
+                "kind": "arg",
+                "path": "args.nonce"
+              }
+            ]
+          }
+        },
+        {
+          "name": "composer_signer",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "PublishPerpEligibilityListArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "record_final_settlement",
+      "docs": [
+        "Records the final NAV and share snapshot for deterministic redemptions."
+      ],
+      "discriminator": [
+        51,
+        17,
+        237,
+        74,
+        237,
+        233,
+        185,
+        80
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "basket",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  97,
+                  115,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "basket.basket_id",
+                "account": "Basket"
+              }
+            ]
+          }
+        },
+        {
+          "name": "backend_signer",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "FinalSettlementArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "register_token",
+      "docs": [
+        "Adds, updates, disables, or re-enables a Jupiter spot-token allowlist entry."
+      ],
+      "discriminator": [
+        32,
+        146,
+        36,
+        240,
+        80,
+        183,
+        36,
+        84
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_allowlist",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110,
+                  95,
+                  97,
+                  108,
+                  108,
+                  111,
+                  119,
+                  108,
+                  105,
+                  115,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "RegisterTokenArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "set_authorities",
+      "docs": [
+        "Rotates operational signer and treasury authorities."
+      ],
+      "discriminator": [
+        124,
+        254,
+        44,
+        240,
+        197,
+        70,
+        190,
+        107
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_composer_signer",
+          "type": {
+            "option": "pubkey"
+          }
+        },
+        {
+          "name": "new_backend_signer",
+          "type": {
+            "option": "pubkey"
+          }
+        },
+        {
+          "name": "new_protocol_treasury",
+          "type": {
+            "option": "pubkey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "set_limits",
+      "docs": [
+        "Updates the global user slippage bound."
+      ],
+      "discriminator": [
+        207,
+        50,
+        250,
+        67,
+        211,
+        33,
+        70,
+        91
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "max_slippage_bps",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "set_paused",
+      "docs": [
+        "Pauses or resumes user and execution completion flows."
+      ],
+      "discriminator": [
+        91,
+        60,
+        125,
+        192,
+        176,
+        225,
+        166,
+        218
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "paused",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "submit_price_attestation",
+      "docs": [
+        "Records a fresh Composer-signed TWAP for a signed-fallback spot token."
+      ],
+      "discriminator": [
+        4,
+        29,
+        113,
+        80,
+        88,
+        153,
+        24,
+        4
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_allowlist",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110,
+                  95,
+                  97,
+                  108,
+                  108,
+                  111,
+                  119,
+                  108,
+                  105,
+                  115,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "price_attestation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  105,
+                  99,
+                  101,
+                  95,
+                  97,
+                  116,
+                  116,
+                  101,
+                  115,
+                  116,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.token_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "composer_signer",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "ix_sysvar",
+          "address": "Sysvar1nstructions1111111111111111111111111"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "SubmitPriceAttestationArgs"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Basket",
+      "discriminator": [
+        219,
+        79,
+        107,
+        135,
+        231,
+        243,
+        218,
+        248
+      ]
+    },
+    {
+      "name": "CompositionDraft",
+      "discriminator": [
+        229,
+        119,
+        58,
+        168,
+        134,
+        105,
+        155,
+        89
+      ]
+    },
+    {
+      "name": "Config",
+      "discriminator": [
+        155,
+        12,
+        170,
+        224,
+        30,
+        250,
+        204,
+        130
+      ]
+    },
+    {
+      "name": "EligibilityList",
+      "discriminator": [
+        246,
+        60,
+        135,
+        157,
+        45,
+        199,
+        223,
+        164
+      ]
+    },
+    {
+      "name": "PerpEligibilityList",
+      "discriminator": [
+        167,
+        84,
+        26,
+        68,
+        166,
+        155,
+        212,
+        120
+      ]
+    },
+    {
+      "name": "PerpEventAttestation",
+      "discriminator": [
+        149,
+        164,
+        45,
+        49,
+        133,
+        96,
+        189,
+        65
+      ]
+    },
+    {
+      "name": "PerpSettlementReceipt",
+      "discriminator": [
+        215,
+        212,
+        224,
+        53,
+        178,
+        180,
+        200,
+        46
+      ]
+    },
+    {
+      "name": "Position",
+      "discriminator": [
+        170,
+        188,
+        143,
+        228,
+        122,
+        64,
+        247,
+        208
+      ]
+    },
+    {
+      "name": "PriceAttestation",
+      "discriminator": [
+        14,
+        221,
+        251,
+        189,
+        238,
+        210,
+        139,
+        75
+      ]
+    },
+    {
+      "name": "SettlementReceipt",
+      "discriminator": [
+        52,
+        249,
+        252,
+        121,
+        4,
+        232,
+        187,
+        4
+      ]
+    },
+    {
+      "name": "TokenAllowlist",
+      "discriminator": [
+        153,
+        168,
+        129,
+        66,
+        180,
+        22,
+        0,
+        239
+      ]
+    },
+    {
+      "name": "TraderAccountRegistry",
+      "discriminator": [
+        83,
+        171,
+        45,
+        107,
+        199,
+        186,
+        97,
+        152
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "AdminTransferAccepted",
+      "discriminator": [
+        79,
+        229,
+        204,
+        202,
+        134,
+        43,
+        177,
+        26
+      ]
+    },
+    {
+      "name": "AdminTransferCancelled",
+      "discriminator": [
+        93,
+        23,
+        69,
+        55,
+        216,
+        128,
+        106,
+        56
+      ]
+    },
+    {
+      "name": "AdminTransferProposed",
+      "discriminator": [
+        203,
+        168,
+        175,
+        51,
+        239,
+        104,
+        20,
+        85
+      ]
+    },
+    {
+      "name": "AuthoritiesUpdated",
+      "discriminator": [
+        67,
+        41,
+        36,
+        180,
+        223,
+        84,
+        221,
+        76
+      ]
+    },
+    {
+      "name": "BasketCreated",
+      "discriminator": [
+        26,
+        146,
+        108,
+        155,
+        189,
+        85,
+        8,
+        7
+      ]
+    },
+    {
+      "name": "BasketReconstituted",
+      "discriminator": [
+        16,
+        150,
+        225,
+        12,
+        4,
+        22,
+        95,
+        171
+      ]
+    },
+    {
+      "name": "BasketStatusUpdated",
+      "discriminator": [
+        137,
+        129,
+        70,
+        236,
+        181,
+        71,
+        100,
+        217
+      ]
+    },
+    {
+      "name": "CompositionDraftPublished",
+      "discriminator": [
+        126,
+        168,
+        91,
+        172,
+        81,
+        218,
+        54,
+        128
+      ]
+    },
+    {
+      "name": "ConfigInitialized",
+      "discriminator": [
+        181,
+        49,
+        200,
+        156,
+        19,
+        167,
+        178,
+        91
+      ]
+    },
+    {
+      "name": "DepositSettled",
+      "discriminator": [
+        154,
+        83,
+        222,
+        39,
+        153,
+        147,
+        84,
+        58
+      ]
+    },
+    {
+      "name": "EligibilityListPublished",
+      "discriminator": [
+        83,
+        75,
+        82,
+        229,
+        241,
+        90,
+        84,
+        240
+      ]
+    },
+    {
+      "name": "FinalSettlementRecorded",
+      "discriminator": [
+        239,
+        132,
+        242,
+        188,
+        76,
+        223,
+        224,
+        51
+      ]
+    },
+    {
+      "name": "LimitsUpdated",
+      "discriminator": [
+        160,
+        131,
+        108,
+        76,
+        91,
+        80,
+        118,
+        137
+      ]
+    },
+    {
+      "name": "ManagementFeeAccrued",
+      "discriminator": [
+        58,
+        154,
+        130,
+        86,
+        156,
+        79,
+        206,
+        166
+      ]
+    },
+    {
+      "name": "PauseUpdated",
+      "discriminator": [
+        203,
+        203,
+        33,
+        225,
+        130,
+        103,
+        90,
+        105
+      ]
+    },
+    {
+      "name": "PerpEligibilityListPublished",
+      "discriminator": [
+        188,
+        80,
+        101,
+        206,
+        41,
+        226,
+        159,
+        45
+      ]
+    },
+    {
+      "name": "PerpEventAttested",
+      "discriminator": [
+        138,
+        78,
+        24,
+        59,
+        115,
+        94,
+        35,
+        161
+      ]
+    },
+    {
+      "name": "PhoenixTradeSettled",
+      "discriminator": [
+        151,
+        90,
+        83,
+        164,
+        163,
+        71,
+        152,
+        107
+      ]
+    },
+    {
+      "name": "PhoenixTraderOnboarded",
+      "discriminator": [
+        176,
+        50,
+        116,
+        255,
+        97,
+        239,
+        20,
+        40
+      ]
+    },
+    {
+      "name": "PriceAttestationSubmitted",
+      "discriminator": [
+        69,
+        65,
+        9,
+        61,
+        104,
+        145,
+        192,
+        154
+      ]
+    },
+    {
+      "name": "ProtocolFeeSharesWithdrawn",
+      "discriminator": [
+        68,
+        102,
+        204,
+        195,
+        221,
+        210,
+        142,
+        244
+      ]
+    },
+    {
+      "name": "TokenAllowlistUpdated",
+      "discriminator": [
+        62,
+        137,
+        236,
+        201,
+        142,
+        26,
+        158,
+        148
+      ]
+    },
+    {
+      "name": "WithdrawalSettled",
+      "discriminator": [
+        7,
+        150,
+        114,
+        152,
+        192,
+        118,
+        224,
+        19
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Paused",
+      "msg": "Program is paused"
+    },
+    {
+      "code": 6001,
+      "name": "Unauthorized",
+      "msg": "Authority is not allowed to perform this action"
+    },
+    {
+      "code": 6002,
+      "name": "AdminTransferNotPending",
+      "msg": "No matching admin transfer is pending"
+    },
+    {
+      "code": 6003,
+      "name": "ZeroAuthority",
+      "msg": "Configured authority cannot be the zero public key"
+    },
+    {
+      "code": 6004,
+      "name": "ZeroAmount",
+      "msg": "Amount must be greater than zero"
+    },
+    {
+      "code": 6005,
+      "name": "ZeroHash",
+      "msg": "Hash value cannot be all zeroes"
+    },
+    {
+      "code": 6006,
+      "name": "MissingCompositionSignature",
+      "msg": "Composer signature instruction is missing"
+    },
+    {
+      "code": 6007,
+      "name": "MalformedCompositionSignature",
+      "msg": "Composer signature instruction is malformed"
+    },
+    {
+      "code": 6008,
+      "name": "UnauthorizedCompositionSigner",
+      "msg": "Composition was signed by an unauthorized key"
+    },
+    {
+      "code": 6009,
+      "name": "CompositionSignatureMismatch",
+      "msg": "Signed composition payload does not match the instruction"
+    },
+    {
+      "code": 6010,
+      "name": "CompositionHashMismatch",
+      "msg": "Composition hash does not match the canonical basket items"
+    },
+    {
+      "code": 6011,
+      "name": "CompositionAuthorizationExpired",
+      "msg": "Composition authorization has expired"
+    },
+    {
+      "code": 6012,
+      "name": "InvalidBasisPoints",
+      "msg": "Fee or slippage basis points are outside configured bounds"
+    },
+    {
+      "code": 6013,
+      "name": "InvalidBasketItems",
+      "msg": "Basket items are missing, duplicated, too many, or malformed"
+    },
+    {
+      "code": 6014,
+      "name": "InvalidBasketWeights",
+      "msg": "Basket item weights must sum to 10000 bps"
+    },
+    {
+      "code": 6015,
+      "name": "MarketWeightExceeded",
+      "msg": "A basket item exceeds the per-market weight cap"
+    },
+    {
+      "code": 6016,
+      "name": "MarketNotEligible",
+      "msg": "Selected prediction market is absent from the signed eligibility list"
+    },
+    {
+      "code": 6017,
+      "name": "InvalidEligibilityList",
+      "msg": "Eligibility list is malformed, stale, or does not match its hash"
+    },
+    {
+      "code": 6018,
+      "name": "TokenNotAllowlisted",
+      "msg": "Spot token is not enabled in the on-chain allowlist"
+    },
+    {
+      "code": 6019,
+      "name": "InvalidTokenMetadata",
+      "msg": "Token allowlist metadata is invalid"
+    },
+    {
+      "code": 6020,
+      "name": "InvalidPriceAttestation",
+      "msg": "Signed spot-price attestation is malformed, stale, or unsupported"
+    },
+    {
+      "code": 6021,
+      "name": "PriceAttestationNonceNotIncreasing",
+      "msg": "Spot-price attestation nonce must increase"
+    },
+    {
+      "code": 6022,
+      "name": "InvalidBasketStatus",
+      "msg": "Basket status does not allow this action"
+    },
+    {
+      "code": 6023,
+      "name": "BasketNotPerpetual",
+      "msg": "Only perpetual baskets can be reconstituted"
+    },
+    {
+      "code": 6024,
+      "name": "MissingIntentSignature",
+      "msg": "User intent signature instruction is missing"
+    },
+    {
+      "code": 6025,
+      "name": "MalformedIntentSignature",
+      "msg": "User intent signature instruction is malformed"
+    },
+    {
+      "code": 6026,
+      "name": "UnauthorizedIntentSigner",
+      "msg": "Intent signature was produced by the wrong user"
+    },
+    {
+      "code": 6027,
+      "name": "IntentSignatureMismatch",
+      "msg": "Signed user intent does not match the completion"
+    },
+    {
+      "code": 6028,
+      "name": "IntentExpired",
+      "msg": "User intent has expired"
+    },
+    {
+      "code": 6029,
+      "name": "IntentNonceMismatch",
+      "msg": "User intent nonce must be exactly the next position nonce"
+    },
+    {
+      "code": 6030,
+      "name": "PositionMismatch",
+      "msg": "Position belongs to a different basket or user"
+    },
+    {
+      "code": 6031,
+      "name": "InsufficientShares",
+      "msg": "Insufficient shares"
+    },
+    {
+      "code": 6032,
+      "name": "SharePriceAlreadyInitialized",
+      "msg": "The initial $1 share price has already been consumed"
+    },
+    {
+      "code": 6033,
+      "name": "CompositionVersionMismatch",
+      "msg": "Completion uses a stale composition version"
+    },
+    {
+      "code": 6034,
+      "name": "FeeMismatch",
+      "msg": "Protocol fee does not match basket rules"
+    },
+    {
+      "code": 6035,
+      "name": "SlippageExceeded",
+      "msg": "Settlement result exceeds the protocol or user slippage limit"
+    },
+    {
+      "code": 6036,
+      "name": "InvalidMinimumOutput",
+      "msg": "Minimum output does not enforce the requested slippage tolerance"
+    },
+    {
+      "code": 6037,
+      "name": "InvalidSettlementValues",
+      "msg": "Settlement values are internally inconsistent"
+    },
+    {
+      "code": 6038,
+      "name": "ShareArithmeticMismatch",
+      "msg": "Credited shares do not match net value and share price"
+    },
+    {
+      "code": 6039,
+      "name": "SharePriceMismatch",
+      "msg": "Share price does not match the supplied basket NAV and outstanding shares"
+    },
+    {
+      "code": 6040,
+      "name": "SettlementNonceNotIncreasing",
+      "msg": "Settlement nonce must increase for every basket completion"
+    },
+    {
+      "code": 6041,
+      "name": "CompositionNonceNotIncreasing",
+      "msg": "Composition nonce must increase for every basket composition"
+    },
+    {
+      "code": 6042,
+      "name": "FinalSnapshotMismatch",
+      "msg": "Final settlement snapshot does not match outstanding shares"
+    },
+    {
+      "code": 6043,
+      "name": "CreatorFeeMismatch",
+      "msg": "Creator performance fee does not match realized profit"
+    },
+    {
+      "code": 6044,
+      "name": "ManagementFeeCatchUpTooLarge",
+      "msg": "Management-fee catch-up exceeds the supported safety bound"
+    },
+    {
+      "code": 6045,
+      "name": "InvalidExecutionVersion",
+      "msg": "Execution batch uses an unsupported encoding version"
+    },
+    {
+      "code": 6046,
+      "name": "InvalidExecutionTimestamp",
+      "msg": "Execution timestamp must be a valid past or current Unix timestamp"
+    },
+    {
+      "code": 6047,
+      "name": "InsufficientProtocolFeeShares",
+      "msg": "Requested protocol fee shares exceed the accrued balance"
+    },
+    {
+      "code": 6048,
+      "name": "MathOverflow",
+      "msg": "Arithmetic overflow or underflow"
+    },
+    {
+      "code": 6049,
+      "name": "MixedAssetClassBasket",
+      "msg": "A perpetual basket may not contain spot or prediction-market items"
+    },
+    {
+      "code": 6050,
+      "name": "SubaccountZeroNotAllowed",
+      "msg": "Phoenix subaccount 0 is cross-margin and may never hold a position"
+    },
+    {
+      "code": 6051,
+      "name": "PerpLeverageOutOfBounds",
+      "msg": "Recorded leverage is outside the supported bounds"
+    },
+    {
+      "code": 6052,
+      "name": "InvalidPerpEligibilityList",
+      "msg": "Perp eligibility list is malformed, stale, or does not match its hash"
+    },
+    {
+      "code": 6053,
+      "name": "MarketNotInComposition",
+      "msg": "Basket composition contains no perpetual item for this market"
+    },
+    {
+      "code": 6054,
+      "name": "SubaccountMismatch",
+      "msg": "Composition item names a different Phoenix subaccount than the trade"
+    },
+    {
+      "code": 6055,
+      "name": "PerpDirectionMismatch",
+      "msg": "Recorded trade direction does not match the approved composition item"
+    },
+    {
+      "code": 6056,
+      "name": "PerpLeverageMismatch",
+      "msg": "Recorded leverage does not match the approved composition item"
+    },
+    {
+      "code": 6057,
+      "name": "PerpBasketMustBePerpetual",
+      "msg": "A basket holding perpetuals must be perpetual; perps never resolve"
+    },
+    {
+      "code": 6058,
+      "name": "TraderRegistryMismatch",
+      "msg": "Trader registry does not belong to this execution wallet"
+    },
+    {
+      "code": 6059,
+      "name": "UnsupportedTraderPdaIndex",
+      "msg": "Phoenix trader PDA index is not the supported user index"
+    },
+    {
+      "code": 6060,
+      "name": "ZeroEntryMarkPrice",
+      "msg": "Recorded entry mark price must be non-zero when opening a position"
+    },
+    {
+      "code": 6061,
+      "name": "ZeroMarginPosted",
+      "msg": "Recorded margin must be non-zero when opening a position"
+    },
+    {
+      "code": 6062,
+      "name": "StalePerpExecution",
+      "msg": "Phoenix execution timestamp is too old to settle"
+    },
+    {
+      "code": 6063,
+      "name": "StalePerpAttestation",
+      "msg": "Phoenix event timestamp is too old to attest"
+    },
+    {
+      "code": 6064,
+      "name": "TimestampInFuture",
+      "msg": "Timestamp is further in the future than clock skew allows"
+    },
+    {
+      "code": 6065,
+      "name": "MismatchedBasket",
+      "msg": "Referenced basket does not match the basket this record belongs to"
+    },
+    {
+      "code": 6066,
+      "name": "MarketIdTooLong",
+      "msg": "Market identifier exceeds the maximum supported length"
+    }
+  ],
+  "types": [
+    {
+      "name": "AdminTransferAccepted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "previous_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_admin",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AdminTransferCancelled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "cancelled_admin",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AdminTransferProposed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "current_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "pending_admin",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AllowedToken",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "jupiter_verified",
+            "type": "bool"
+          },
+          {
+            "name": "asset_class",
+            "type": {
+              "defined": {
+                "name": "TokenAssetClass"
+              }
+            }
+          },
+          {
+            "name": "availability",
+            "type": {
+              "defined": {
+                "name": "TradingAvailability"
+              }
+            }
+          },
+          {
+            "name": "price_source",
+            "type": {
+              "defined": {
+                "name": "SpotPriceSource"
+              }
+            }
+          },
+          {
+            "name": "backing_attestation_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "enabled",
+            "type": "bool"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "updated_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AttestPerpEventArgs",
+      "docs": [
+        "An autonomous Phoenix action. Callable unprompted, with no matching trade."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "event_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "basket_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "event_kind",
+            "type": {
+              "defined": {
+                "name": "PerpEventKind"
+              }
+            }
+          },
+          {
+            "name": "market_id",
+            "type": "string"
+          },
+          {
+            "name": "phoenix_subaccount",
+            "type": "u8"
+          },
+          {
+            "name": "detail_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "observed_at",
+            "type": "i64"
+          },
+          {
+            "name": "observed_slot",
+            "type": "u64"
+          },
+          {
+            "name": "attestation_nonce",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AuthoritiesUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "composer_signer",
+            "type": "pubkey"
+          },
+          {
+            "name": "backend_signer",
+            "type": "pubkey"
+          },
+          {
+            "name": "protocol_treasury",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Basket",
+      "docs": [
+        "Basket composition, lifecycle, and aggregate share accounting."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "basket_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "composer",
+            "type": "pubkey"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "creator_fee_destination",
+            "type": "pubkey"
+          },
+          {
+            "name": "protocol_fee_destination",
+            "type": "pubkey"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "BasketStatus"
+              }
+            }
+          },
+          {
+            "name": "composition_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "composition_version",
+            "type": "u32"
+          },
+          {
+            "name": "last_composition_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "performance_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "is_perpetual",
+            "type": "bool"
+          },
+          {
+            "name": "reconstitution_cadence_secs",
+            "type": "i64"
+          },
+          {
+            "name": "total_shares_outstanding",
+            "type": "u64"
+          },
+          {
+            "name": "protocol_fee_shares",
+            "type": "u64"
+          },
+          {
+            "name": "last_management_fee_at",
+            "type": "i64"
+          },
+          {
+            "name": "management_fee_accrual_remainder",
+            "type": "u128"
+          },
+          {
+            "name": "has_initialized_share_price",
+            "type": "bool"
+          },
+          {
+            "name": "last_settlement_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "gross_deposited_value",
+            "type": "u64"
+          },
+          {
+            "name": "final_report_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "final_nav_value",
+            "type": "u64"
+          },
+          {
+            "name": "final_share_snapshot",
+            "type": "u64"
+          },
+          {
+            "name": "final_shares_consumed",
+            "type": "u64"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "last_reconstitution_at",
+            "type": "i64"
+          },
+          {
+            "name": "updated_at",
+            "type": "i64"
+          },
+          {
+            "name": "items",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "BasketAsset"
+                }
+              }
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BasketAsset",
+      "docs": [
+        "One weighted asset in a Composer-signed basket composition."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market_id",
+            "type": "string"
+          },
+          {
+            "name": "kind",
+            "type": {
+              "defined": {
+                "name": "PositionKind"
+              }
+            }
+          },
+          {
+            "name": "weight_bps",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BasketCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "basket",
+            "type": "pubkey"
+          },
+          {
+            "name": "basket_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "composer",
+            "type": "pubkey"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "composition_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "performance_fee_bps",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BasketReconstituted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "basket",
+            "type": "pubkey"
+          },
+          {
+            "name": "composition_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "composition_version",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BasketStatus",
+      "docs": [
+        "Lifecycle states for a basket."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Reconstituting"
+          },
+          {
+            "name": "Resolving"
+          },
+          {
+            "name": "Redeemable"
+          },
+          {
+            "name": "Closed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BasketStatusUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "basket",
+            "type": "pubkey"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "BasketStatus"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "CompleteDepositArgs",
+      "docs": [
+        "User intent and backend result used to complete a deposit. The gross amount",
+        "and minimum shares are user-authorized; `net_deposit_value` is the actual",
+        "value credited by external execution and backs the minted shares."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "intent_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "intent_expiry",
+            "type": "i64"
+          },
+          {
+            "name": "expected_composition_version",
+            "type": "u32"
+          },
+          {
+            "name": "gross_amount",
+            "type": "u64"
+          },
+          {
+            "name": "min_shares_out",
+            "type": "u64"
+          },
+          {
+            "name": "quote_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "execution_version",
+            "type": "u8"
+          },
+          {
+            "name": "execution_batch_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "executed_at",
+            "type": "i64"
+          },
+          {
+            "name": "nav_report_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "settlement_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "basket_nav_value",
+            "type": "u64"
+          },
+          {
+            "name": "share_price",
+            "type": "u64"
+          },
+          {
+            "name": "net_deposit_value",
+            "type": "u64"
+          },
+          {
+            "name": "shares_credited",
+            "type": "u64"
+          },
+          {
+            "name": "protocol_fee",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CompletePhoenixTradeArgs",
+      "docs": [
+        "An already-executed, vault-delta-verified Phoenix trade.",
+        "",
+        "Every figure was computed off chain and read back from real post-execution",
+        "Phoenix state. This program validates and records; it computes no NAV, no fees",
+        "and no PnL."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "execution_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "request_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "idempotency_key",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "settlement_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "basket_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "expected_composition_version",
+            "docs": [
+              "Bound the same way `complete_deposit` binds: the basket's live",
+              "`composition_version`. The hash is checked as well, because unlike a",
+              "deposit this instruction writes into `items`."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "expected_composition_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "market_id",
+            "docs": [
+              "Phoenix market symbol, read live from exchange metadata by the backend."
+            ],
+            "type": "string"
+          },
+          {
+            "name": "side",
+            "type": {
+              "defined": {
+                "name": "PerpTradeSide"
+              }
+            }
+          },
+          {
+            "name": "direction",
+            "type": {
+              "defined": {
+                "name": "PerpDirection"
+              }
+            }
+          },
+          {
+            "name": "phoenix_subaccount",
+            "type": "u8"
+          },
+          {
+            "name": "leverage_bps",
+            "type": "u16"
+          },
+          {
+            "name": "execution_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "requested_collateral_units",
+            "type": "u64"
+          },
+          {
+            "name": "actual_margin_posted_units",
+            "docs": [
+              "Collateral actually resident in the isolated subaccount after execution."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "entry_mark_price",
+            "docs": [
+              "Entry price of the resulting position. Zero means \"no position left to",
+              "price\" and is accepted only on a close."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "fill_status",
+            "type": {
+              "defined": {
+                "name": "PerpFillStatus"
+              }
+            }
+          },
+          {
+            "name": "executed_at",
+            "type": "i64"
+          },
+          {
+            "name": "executed_slot",
+            "type": "u64"
+          },
+          {
+            "name": "transaction_signature",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "CompleteProtocolFeeWithdrawalArgs",
+      "docs": [
+        "Backend result used to redeem protocol-owned dilution shares. The gross",
+        "realized value is the actual external execution value."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "execution_version",
+            "type": "u8"
+          },
+          {
+            "name": "execution_batch_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "executed_at",
+            "type": "i64"
+          },
+          {
+            "name": "nav_report_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "settlement_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "share_amount",
+            "type": "u64"
+          },
+          {
+            "name": "basket_nav_value",
+            "type": "u64"
+          },
+          {
+            "name": "share_price",
+            "type": "u64"
+          },
+          {
+            "name": "gross_realized_value",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CompleteWithdrawalArgs",
+      "docs": [
+        "User intent and backend result used to complete a withdrawal. The share",
+        "amount and minimum value are user-authorized; `gross_realized_value` is the",
+        "actual external execution value used for fee and proceeds accounting."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "intent_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "intent_expiry",
+            "type": "i64"
+          },
+          {
+            "name": "expected_composition_version",
+            "type": "u32"
+          },
+          {
+            "name": "share_amount",
+            "type": "u64"
+          },
+          {
+            "name": "min_value_out",
+            "type": "u64"
+          },
+          {
+            "name": "destination",
+            "type": "pubkey"
+          },
+          {
+            "name": "quote_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "execution_version",
+            "type": "u8"
+          },
+          {
+            "name": "execution_batch_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "executed_at",
+            "type": "i64"
+          },
+          {
+            "name": "nav_report_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "settlement_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "basket_nav_value",
+            "type": "u64"
+          },
+          {
+            "name": "share_price",
+            "type": "u64"
+          },
+          {
+            "name": "gross_realized_value",
+            "type": "u64"
+          },
+          {
+            "name": "protocol_fee",
+            "type": "u64"
+          },
+          {
+            "name": "creator_fee",
+            "type": "u64"
+          },
+          {
+            "name": "user_value_out",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CompositionDraft",
+      "docs": [
+        "Composer-published creator selection. Splitting variable-size items into a",
+        "prior transaction keeps create/reconstitution transactions under Solana's",
+        "packet limit without weakening Ed25519 authorization."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "composition_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "eligibility_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "eligibility_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "composition_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "composer",
+            "type": "pubkey"
+          },
+          {
+            "name": "published_at",
+            "type": "i64"
+          },
+          {
+            "name": "items",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "BasketAsset"
+                }
+              }
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CompositionDraftPublished",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "composition_draft",
+            "type": "pubkey"
+          },
+          {
+            "name": "composition_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "eligibility_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "eligibility_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "composition_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "item_count",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Config",
+      "docs": [
+        "Singleton protocol configuration and authority registry."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "pending_admin",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "composer_signer",
+            "type": "pubkey"
+          },
+          {
+            "name": "backend_signer",
+            "type": "pubkey"
+          },
+          {
+            "name": "protocol_treasury",
+            "type": "pubkey"
+          },
+          {
+            "name": "settlement_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "max_slippage_bps",
+            "type": "u16"
+          },
+          {
+            "name": "accounting_decimals",
+            "type": "u8"
+          },
+          {
+            "name": "paused",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "composer_signer",
+            "type": "pubkey"
+          },
+          {
+            "name": "backend_signer",
+            "type": "pubkey"
+          },
+          {
+            "name": "protocol_treasury",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreateBasketArgs",
+      "docs": [
+        "Composer-authorized basket creation parameters."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "basket_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "composition_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "eligibility_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "eligibility_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "creator_fee_destination",
+            "type": "pubkey"
+          },
+          {
+            "name": "performance_fee_bps",
+            "type": {
+              "option": "u16"
+            }
+          },
+          {
+            "name": "is_perpetual",
+            "type": "bool"
+          },
+          {
+            "name": "reconstitution_cadence_secs",
+            "type": "i64"
+          },
+          {
+            "name": "composition_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "composition_expiry",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DepositSettled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "intent_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "intent_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "receipt",
+            "type": "pubkey"
+          },
+          {
+            "name": "basket",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "execution_batch_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "executed_at",
+            "type": "i64"
+          },
+          {
+            "name": "net_invested_value",
+            "type": "u64"
+          },
+          {
+            "name": "shares_credited",
+            "type": "u64"
+          },
+          {
+            "name": "protocol_fee",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EligibilityList",
+      "docs": [
+        "Short-lived Composer-published market list used by basket creation/reconstitution."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "list_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "composer",
+            "type": "pubkey"
+          },
+          {
+            "name": "published_at",
+            "type": "i64"
+          },
+          {
+            "name": "expires_at",
+            "type": "i64"
+          },
+          {
+            "name": "markets",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "EligibleMarket"
+                }
+              }
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EligibilityListPublished",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "eligibility_list",
+            "type": "pubkey"
+          },
+          {
+            "name": "list_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "market_count",
+            "type": "u16"
+          },
+          {
+            "name": "expires_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EligibleMarket",
+      "docs": [
+        "One prediction market admitted by the Composer's unchanged six-point screen.",
+        "Weights are deliberately absent: creators choose them after eligibility is signed."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market_id",
+            "type": "string"
+          },
+          {
+            "name": "outcome",
+            "type": "u8"
+          },
+          {
+            "name": "ctf_token_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "FinalSettlementArgs",
+      "docs": [
+        "Final basket NAV and share-supply snapshot."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "final_report_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "final_nav_value",
+            "type": "u64"
+          },
+          {
+            "name": "final_share_snapshot",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FinalSettlementRecorded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "basket",
+            "type": "pubkey"
+          },
+          {
+            "name": "final_report_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "final_nav_value",
+            "type": "u64"
+          },
+          {
+            "name": "final_share_snapshot",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InitializeArgs",
+      "docs": [
+        "Initialization parameters for operational authorities and accounting policy."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "composer_signer",
+            "type": "pubkey"
+          },
+          {
+            "name": "backend_signer",
+            "type": "pubkey"
+          },
+          {
+            "name": "protocol_treasury",
+            "type": "pubkey"
+          },
+          {
+            "name": "settlement_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "max_slippage_bps",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LimitsUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "max_slippage_bps",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ManagementFeeAccrued",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "basket",
+            "type": "pubkey"
+          },
+          {
+            "name": "periods",
+            "type": "u64"
+          },
+          {
+            "name": "elapsed_seconds",
+            "type": "i64"
+          },
+          {
+            "name": "shares_minted",
+            "type": "u64"
+          },
+          {
+            "name": "protocol_fee_shares",
+            "type": "u64"
+          },
+          {
+            "name": "total_shares_outstanding",
+            "type": "u64"
+          },
+          {
+            "name": "accrued_through",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OnboardTraderAccountArgs",
+      "docs": [
+        "One-time Phoenix onboarding record for an execution wallet."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "execution_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "phoenix_trader_pda",
+            "type": "pubkey"
+          },
+          {
+            "name": "phoenix_pda_index",
+            "type": "u8"
+          },
+          {
+            "name": "onboarded_at",
+            "type": "i64"
+          },
+          {
+            "name": "onboarding_signature",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "PauseUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "paused",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PerpDirection",
+      "docs": [
+        "Direction of a perpetual position.",
+        "",
+        "A dedicated enum rather than a bool or a signed size: a bool has no natural",
+        "reading (\"true\" is not obviously long), and a signed magnitude conflates",
+        "direction with size, so a zero-size position would have no direction at all."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Long"
+          },
+          {
+            "name": "Short"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PerpEligibilityList",
+      "docs": [
+        "Short-lived Composer-published perpetual market list, the perp counterpart to",
+        "`EligibilityList`. Seeded at `b\"perp_eligibility\"` so it cannot collide with",
+        "the prediction-market list at `b\"eligibility\"`."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "list_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "composer",
+            "type": "pubkey"
+          },
+          {
+            "name": "published_at",
+            "type": "i64"
+          },
+          {
+            "name": "expires_at",
+            "type": "i64"
+          },
+          {
+            "name": "markets",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "PerpEligibleMarket"
+                }
+              }
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PerpEligibilityListPublished",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "perp_eligibility_list",
+            "type": "pubkey"
+          },
+          {
+            "name": "list_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "market_count",
+            "type": "u16"
+          },
+          {
+            "name": "expires_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PerpEligibleMarket",
+      "docs": [
+        "One Phoenix perpetual market the Composer has admitted.",
+        "",
+        "Deliberately not `EligibleMarket`: that type's `outcome` and `ctf_token_id`",
+        "are Polymarket/CTF fields with no meaning for a perpetual, and spot has its own",
+        "`TokenAllowlist`. Weights are absent for the same reason as `EligibleMarket` —",
+        "creators choose them after eligibility is signed."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market_id",
+            "docs": [
+              "Phoenix market symbol, e.g. \"SOL\". Read live from Phoenix exchange metadata."
+            ],
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PerpEventAttestation",
+      "docs": [
+        "Record of an autonomous Phoenix action against a basket position.",
+        "Seeds: `[b\"perp_event\", event_hash]`."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "event_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "basket",
+            "type": "pubkey"
+          },
+          {
+            "name": "event_kind",
+            "type": {
+              "defined": {
+                "name": "PerpEventKind"
+              }
+            }
+          },
+          {
+            "name": "market_id",
+            "type": "string"
+          },
+          {
+            "name": "phoenix_subaccount",
+            "type": "u8"
+          },
+          {
+            "name": "detail_hash",
+            "docs": [
+              "Hash of the full Phoenix event payload, which is too large and too",
+              "venue-specific to store on chain."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "observed_at",
+            "type": "i64"
+          },
+          {
+            "name": "observed_slot",
+            "type": "u64"
+          },
+          {
+            "name": "recorded_at",
+            "type": "i64"
+          },
+          {
+            "name": "recorded_slot",
+            "type": "u64"
+          },
+          {
+            "name": "attestation_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PerpEventAttested",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "attestation",
+            "type": "pubkey"
+          },
+          {
+            "name": "basket",
+            "type": "pubkey"
+          },
+          {
+            "name": "event_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "market_id",
+            "type": "string"
+          },
+          {
+            "name": "phoenix_subaccount",
+            "type": "u8"
+          },
+          {
+            "name": "observed_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PerpEventKind",
+      "docs": [
+        "The kind of unprompted action Phoenix took on a position.",
+        "",
+        "Phoenix's own wire names are `adl` and `risk_engine_cancel_order`."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Adl"
+          },
+          {
+            "name": "AutonomousCancel"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PerpFillStatus",
+      "docs": [
+        "Outcome of a Phoenix execution, derived from post-execution position state.",
+        "",
+        "There is deliberately no `Rejected` variant. A rejected order posted no margin",
+        "and opened no position, so there is nothing to settle: the backend surfaces it",
+        "as a failure and never reaches `complete_phoenix_trade`. Accepting `Rejected`",
+        "here would create a receipt asserting a trade happened when it did not."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Filled"
+          },
+          {
+            "name": "PartiallyFilled"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PerpSettlementReceipt",
+      "docs": [
+        "Immutable record of one already-executed Phoenix trade.",
+        "Seeds: `[b\"perp_receipt\", execution_hash]`.",
+        "",
+        "Named and seeded apart from `SettlementReceipt`, which records accounting",
+        "settlements at `[b\"receipt\", execution_batch_hash]` and has an unrelated shape."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "execution_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "request_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "idempotency_key",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "basket",
+            "type": "pubkey"
+          },
+          {
+            "name": "execution_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "market_id",
+            "type": "string"
+          },
+          {
+            "name": "side",
+            "type": {
+              "defined": {
+                "name": "PerpTradeSide"
+              }
+            }
+          },
+          {
+            "name": "direction",
+            "type": {
+              "defined": {
+                "name": "PerpDirection"
+              }
+            }
+          },
+          {
+            "name": "fill_status",
+            "type": {
+              "defined": {
+                "name": "PerpFillStatus"
+              }
+            }
+          },
+          {
+            "name": "phoenix_subaccount",
+            "type": "u8"
+          },
+          {
+            "name": "leverage_bps",
+            "type": "u16"
+          },
+          {
+            "name": "requested_collateral_units",
+            "type": "u64"
+          },
+          {
+            "name": "actual_margin_posted_units",
+            "docs": [
+              "Read from post-execution Phoenix state, never from a quote."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "entry_mark_price",
+            "docs": [
+              "Read from post-execution Phoenix state, never from a quote."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "settlement_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "executed_at",
+            "type": "i64"
+          },
+          {
+            "name": "executed_slot",
+            "type": "u64"
+          },
+          {
+            "name": "recorded_at",
+            "type": "i64"
+          },
+          {
+            "name": "recorded_slot",
+            "type": "u64"
+          },
+          {
+            "name": "transaction_signature",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PerpTradeSide",
+      "docs": [
+        "Whether a recorded Phoenix trade opened or closed a position."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Open"
+          },
+          {
+            "name": "Close"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PhoenixTradeSettled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "receipt",
+            "type": "pubkey"
+          },
+          {
+            "name": "basket",
+            "type": "pubkey"
+          },
+          {
+            "name": "execution_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "market_id",
+            "type": "string"
+          },
+          {
+            "name": "phoenix_subaccount",
+            "type": "u8"
+          },
+          {
+            "name": "actual_margin_posted_units",
+            "docs": [
+              "Read from post-execution Phoenix state, never from a quote."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "entry_mark_price",
+            "type": "u64"
+          },
+          {
+            "name": "settlement_nonce",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PhoenixTraderOnboarded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "registry",
+            "type": "pubkey"
+          },
+          {
+            "name": "execution_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "phoenix_trader_pda",
+            "type": "pubkey"
+          },
+          {
+            "name": "onboarded_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Position",
+      "docs": [
+        "A user's shares, performance-fee basis, and weighted holding timestamp.",
+        "`cost_basis_value` is the aggregate HWM/equalization basis of the remaining",
+        "shares. Partial redemptions remove only their proportional basis; they do",
+        "not raise the per-share basis of unredeemed shares unless those shares also",
+        "crystallize a performance fee."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "basket",
+            "type": "pubkey"
+          },
+          {
+            "name": "shares_owned",
+            "type": "u64"
+          },
+          {
+            "name": "cost_basis_value",
+            "type": "u64"
+          },
+          {
+            "name": "gross_deposited_value",
+            "type": "u64"
+          },
+          {
+            "name": "last_intent_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "weighted_deposit_timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PositionKind",
+      "docs": [
+        "Tagged representation of a supported basket position.",
+        "",
+        "Adding `Perp` does not change `PositionKind::INIT_SPACE`: the variant is 20",
+        "bytes against `PredictionMarket`'s 33, so the maximum is unchanged and no",
+        "existing `Basket` or `CompositionDraft` needs a realloc."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "PredictionMarket",
+            "fields": [
+              {
+                "name": "outcome",
+                "type": "u8"
+              },
+              {
+                "name": "ctf_token_id",
+                "type": {
+                  "array": [
+                    "u8",
+                    32
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "Spot",
+            "fields": [
+              {
+                "name": "token_mint",
+                "type": "pubkey"
+              }
+            ]
+          },
+          {
+            "name": "Perp",
+            "fields": [
+              {
+                "name": "direction",
+                "type": {
+                  "defined": {
+                    "name": "PerpDirection"
+                  }
+                }
+              },
+              {
+                "name": "leverage_bps",
+                "type": "u16"
+              },
+              {
+                "name": "entry_mark_price",
+                "type": "u64"
+              },
+              {
+                "name": "margin_posted",
+                "type": "u64"
+              },
+              {
+                "name": "phoenix_subaccount",
+                "docs": [
+                  "Phoenix isolated subaccount index. Always greater than zero;",
+                  "subaccount 0 is Phoenix's cross-margin account and is never used to",
+                  "hold a position."
+                ],
+                "type": "u8"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "PriceAttestation",
+      "docs": [
+        "Latest Composer-signed TWAP fallback for a token without a robust oracle."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "price_value",
+            "docs": [
+              "Six-decimal settlement-value price, matching the accounting engine."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "confidence_bps",
+            "type": "u16"
+          },
+          {
+            "name": "observed_at",
+            "type": "i64"
+          },
+          {
+            "name": "valid_until",
+            "type": "i64"
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "signer",
+            "type": "pubkey"
+          },
+          {
+            "name": "attestation_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PriceAttestationSubmitted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "price_attestation",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "price_value",
+            "type": "u64"
+          },
+          {
+            "name": "confidence_bps",
+            "type": "u16"
+          },
+          {
+            "name": "observed_at",
+            "type": "i64"
+          },
+          {
+            "name": "valid_until",
+            "type": "i64"
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "attestation_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProtocolFeeSharesWithdrawn",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "receipt",
+            "type": "pubkey"
+          },
+          {
+            "name": "basket",
+            "type": "pubkey"
+          },
+          {
+            "name": "destination",
+            "type": "pubkey"
+          },
+          {
+            "name": "execution_batch_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "executed_at",
+            "type": "i64"
+          },
+          {
+            "name": "shares_redeemed",
+            "type": "u64"
+          },
+          {
+            "name": "gross_value",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PublishCompositionDraftArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "composition_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "eligibility_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "eligibility_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "composition_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "items",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "BasketAsset"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "PublishEligibilityListArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "list_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "expires_at",
+            "type": "i64"
+          },
+          {
+            "name": "markets",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "EligibleMarket"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "PublishPerpEligibilityListArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "list_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "expires_at",
+            "type": "i64"
+          },
+          {
+            "name": "markets",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "PerpEligibleMarket"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ReconstitutionArgs",
+      "docs": [
+        "Composer-authorized replacement composition."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "composition_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "eligibility_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "eligibility_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "composition_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "composition_expiry",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RegisterTokenArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "jupiter_verified",
+            "type": "bool"
+          },
+          {
+            "name": "asset_class",
+            "type": {
+              "defined": {
+                "name": "TokenAssetClass"
+              }
+            }
+          },
+          {
+            "name": "availability",
+            "type": {
+              "defined": {
+                "name": "TradingAvailability"
+              }
+            }
+          },
+          {
+            "name": "price_source",
+            "type": {
+              "defined": {
+                "name": "SpotPriceSource"
+              }
+            }
+          },
+          {
+            "name": "backing_attestation_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "enabled",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SettlementAction",
+      "docs": [
+        "Settlement receipt operation type."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Deposit"
+          },
+          {
+            "name": "UserWithdrawal"
+          },
+          {
+            "name": "ProtocolFeeWithdrawal"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SettlementReceipt",
+      "docs": [
+        "Immutable replay-protected record of a completed accounting settlement."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "intent_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "intent_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "basket",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "destination",
+            "type": "pubkey"
+          },
+          {
+            "name": "action",
+            "type": {
+              "defined": {
+                "name": "SettlementAction"
+              }
+            }
+          },
+          {
+            "name": "execution_version",
+            "docs": [
+              "Version of the canonical external-execution batch encoding."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "execution_batch_hash",
+            "docs": [
+              "Hash of all fill markets, outcomes, amounts, prices, and external references."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "executed_at",
+            "docs": [
+              "Timestamp at which the external execution batch completed."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "nav_report_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "share_delta",
+            "type": "u64"
+          },
+          {
+            "name": "share_price",
+            "type": "u64"
+          },
+          {
+            "name": "gross_value",
+            "docs": [
+              "Actual value credited for a deposit or realized for a withdrawal."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "protocol_fee",
+            "type": "u64"
+          },
+          {
+            "name": "creator_fee",
+            "type": "u64"
+          },
+          {
+            "name": "withdrawn_cost_basis",
+            "type": "u64"
+          },
+          {
+            "name": "realized_profit",
+            "type": "u64"
+          },
+          {
+            "name": "early_exit_value",
+            "type": "u64"
+          },
+          {
+            "name": "mature_exit_value",
+            "type": "u64"
+          },
+          {
+            "name": "user_value_out",
+            "type": "u64"
+          },
+          {
+            "name": "settlement_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "settled_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SpotPriceSource",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Pyth",
+            "fields": [
+              {
+                "name": "feed_id",
+                "type": {
+                  "array": [
+                    "u8",
+                    32
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "Switchboard",
+            "fields": [
+              {
+                "name": "feed",
+                "type": "pubkey"
+              }
+            ]
+          },
+          {
+            "name": "SignedTwap"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SubmitPriceAttestationArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "price_value",
+            "type": "u64"
+          },
+          {
+            "name": "confidence_bps",
+            "type": "u16"
+          },
+          {
+            "name": "observed_at",
+            "type": "i64"
+          },
+          {
+            "name": "valid_until",
+            "type": "i64"
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TokenAllowlist",
+      "docs": [
+        "Admin-maintained spot-token registry. Disabling an entry blocks new",
+        "compositions but never changes or liquidates an existing basket."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "registered_by",
+            "type": "pubkey"
+          },
+          {
+            "name": "tokens",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "AllowedToken"
+                }
+              }
+            }
+          },
+          {
+            "name": "updated_at",
+            "type": "i64"
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TokenAllowlistUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "token_allowlist",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "enabled",
+            "type": "bool"
+          },
+          {
+            "name": "jupiter_verified",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TokenAssetClass",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Crypto"
+          },
+          {
+            "name": "TokenizedEquity"
+          },
+          {
+            "name": "Other"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TraderAccountRegistry",
+      "docs": [
+        "Proof that an execution wallet was onboarded to Phoenix exactly once.",
+        "Seeds: `[b\"perp_trader\", execution_wallet]`."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "execution_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "phoenix_trader_pda",
+            "type": "pubkey"
+          },
+          {
+            "name": "phoenix_pda_index",
+            "type": "u8"
+          },
+          {
+            "name": "onboarded_at",
+            "type": "i64"
+          },
+          {
+            "name": "onboarding_signature",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TradingAvailability",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "TwentyFourSeven"
+          },
+          {
+            "name": "TwentyFourFive"
+          }
+        ]
+      }
+    },
+    {
+      "name": "WithdrawalKind",
+      "docs": [
+        "Whether a redemption occurs while active or against a final snapshot."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Final"
+          }
+        ]
+      }
+    },
+    {
+      "name": "WithdrawalSettled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "intent_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "intent_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "receipt",
+            "type": "pubkey"
+          },
+          {
+            "name": "basket",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "destination",
+            "type": "pubkey"
+          },
+          {
+            "name": "execution_batch_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "executed_at",
+            "type": "i64"
+          },
+          {
+            "name": "shares_decremented",
+            "type": "u64"
+          },
+          {
+            "name": "user_value_out",
+            "type": "u64"
+          },
+          {
+            "name": "protocol_fee",
+            "type": "u64"
+          },
+          {
+            "name": "creator_fee",
+            "type": "u64"
+          },
+          {
+            "name": "withdrawn_cost_basis",
+            "type": "u64"
+          },
+          {
+            "name": "realized_profit",
+            "type": "u64"
+          },
+          {
+            "name": "early_exit_value",
+            "type": "u64"
+          },
+          {
+            "name": "mature_exit_value",
+            "type": "u64"
+          },
+          {
+            "name": "kind",
+            "type": {
+              "defined": {
+                "name": "WithdrawalKind"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
